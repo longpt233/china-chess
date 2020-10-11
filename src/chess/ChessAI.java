@@ -9,8 +9,8 @@ public class ChessAI {
 	private int[][] data;
 	private final int ROWS =10;
 	private final int COLS=9;
-	private int MAXDEPTH=2;
-	private int Goi=-1;
+	private int MAXDEPTH=4;
+	private int bestMove=-1;// luu nuco di tot nhat  cho moi step 
 	@SuppressWarnings("unused")
 	private int scoreAfter;
 	private int scoreBegin;
@@ -24,7 +24,7 @@ public class ChessAI {
 		scoreBegin=ComputeChessScore(this.data);
 		
 	}
-	// score ban co hien tai
+	// score ban co hien tai tinh cho AI (data>8 thi cong , data<8 thi tru )
 	public int ComputeChessScore(int[][] data) {
 		int nowScore=0;
 		for(int i=0;i<ROWS ;i++){
@@ -150,28 +150,36 @@ public class ChessAI {
 		List<List<Integer>> FirstMove=GenerateAllMove(data, true);
 		int[][] subData=CloneData(data);
 		this.scoreAfter=AlphaBeta(Integer.MIN_VALUE, Integer.MAX_VALUE, 0, data);
-		if(Goi==-1){
+		// sau khi chay alpha beta thi bien bestMove no phai tanwg len va tra ve nuoc di tot nhat 
+		//neu khong tuc la dang khong co nuoc di hop le 
+		if(bestMove==-1){
 			for(int i=0;i<FirstMove.get(0).size();i+=2){
 				int[][] temp=CloneData(subData);
+				// QUAN CO o toa do moi dc gan nhan bang cu 
+				// toa do moi 
 				temp[FirstMove.get(0).get(i+1)][FirstMove.get(1).get(i+1)]=
 						temp[FirstMove.get(0).get(i)][FirstMove.get(1).get(i)];
+				// toa do ban dau =0
 				temp[FirstMove.get(0).get(i)][FirstMove.get(1).get(i)]=0;
-				if(!CanEatAiGerNow(temp)){
-					Goi=i;
+				if(!canEatAIGerNow(temp)){
+					bestMove=i;
 					return temp;
 				}
 			}
-			if(Goi==-1){
+			// thua (khong co nuoc di )
+			if(bestMove==-1){
 				return null;
 			}
 		}
-		subData[FirstMove.get(0).get(Goi+1)][FirstMove.get(1).get(Goi+1)]=
-				subData[FirstMove.get(0).get(Goi)][FirstMove.get(1).get(Goi)];
-		subData[FirstMove.get(0).get(Goi)][FirstMove.get(1).get(Goi)]=0;
+		
+		// di chuyen theo nuoc di cua best move 
+		subData[FirstMove.get(0).get(bestMove+1)][FirstMove.get(1).get(bestMove+1)]=
+				subData[FirstMove.get(0).get(bestMove)][FirstMove.get(1).get(bestMove)];
+		subData[FirstMove.get(0).get(bestMove)][FirstMove.get(1).get(bestMove)]=0;
 		return subData;
 	}
-//	search
-	public boolean CanEatAiGerNow(int[][] subuc) {
+	//search
+	public boolean canEatAIGerNow(int[][] subuc) {
 		
 		int jx = -1;
 		int jy = -1;
@@ -347,20 +355,13 @@ public class ChessAI {
 		}
 	
 	// khong th gop vi co mot so thuat toan ( quan ma an bi bat doi xung )
-	public boolean CanEatUserGer(int[][] subuc) {
-		
-		int XE=1;
-		int PHAO=6;
-		int MA=2;
-		int TUONG=5;
-		int TOT=7;
-	
+	public boolean canEatUserGer(int[][] subuc) {
 		
 		int jx = -1;
 		int jy = -1;
 		for(int i=0;i<ROWS ;i++){
 			for(int j=0;j<COLS;j++){
-				if(subuc[i][j]==TUONG){
+				if(subuc[i][j]==5){
 					jx=i;
 					jy=j;
 				}
@@ -373,7 +374,7 @@ public class ChessAI {
 		for(int h=jy-1;h>=0;h--){
 			if(subuc[jx][h]==0)
 				continue;
-			else if(subuc[jx][h]==XE){
+			else if(subuc[jx][h]==8){
 				return true;
 			}else {
 				break;
@@ -382,33 +383,33 @@ public class ChessAI {
 		for(int h=jy+1;h<COLS;h++){
 			if(subuc[jx][h]==0)
 				continue;
-			else if(subuc[jx][h]==XE)
+			else if(subuc[jx][h]==8)
 				return true;
 			else {
 				break;
 			}
 		}
 		
-		for(int h=jx-1;h>=0;h--){
-			if(subuc[h][jy]==0)
-				continue;
-			else if(subuc[h][jy]==XE)
-				return true;
-			else {
-				break;
-			}
-		}
-		
-		if(jx+1<ROWS ){
-			for(int h=jx+1;h<ROWS ;h++){
+			for(int h=jx-1;h>=0;h--){
 				if(subuc[h][jy]==0)
 					continue;
-				else if(subuc[h][jy]==XE)
+				else if(subuc[h][jy]==8)
 					return true;
 				else {
 					break;
 				}
 			}
+		
+		if(jx+1<ROWS ){
+		for(int h=jx+1;h<ROWS ;h++){
+			if(subuc[h][jy]==0)
+				continue;
+			else if(subuc[h][jy]==8)
+				return true;
+			else {
+				break;
+			}
+		}
 		}
 //##################################################
 // check phao  co the an tuong luon 
@@ -423,7 +424,7 @@ public class ChessAI {
 					for(int k=h-1;k>=0;k--){
 						if(subuc[jx][k]==0)
 							continue;
-						else if(subuc[jx][k]==PHAO)
+						else if(subuc[jx][k]==13)
 							return true;
 						else {
 							break;
@@ -441,7 +442,7 @@ public class ChessAI {
 					for(int k=h+1;k<COLS;k++){
 						if(subuc[jx][k]==0)
 							continue;
-						else if(subuc[jx][k]==PHAO)
+						else if(subuc[jx][k]==13)
 							return true;
 						else {
 							break;
@@ -460,7 +461,7 @@ public class ChessAI {
 						for(int k=h-1;k>=0;k--){
 							if(subuc[k][jy]==0)
 								continue;
-							else if(subuc[k][jy]==PHAO)
+							else if(subuc[k][jy]==13)
 								return true;
 							else {
 								break;
@@ -480,7 +481,7 @@ public class ChessAI {
 						for(int k=h+1;k<ROWS ;k++){
 							if(subuc[k][jy]==0)
 								continue;
-							else if(subuc[k][jy]==PHAO)
+							else if(subuc[k][jy]==13)
 								return true;
 							else {
 								break;
@@ -495,28 +496,26 @@ public class ChessAI {
 // check ma co the an tuong luon 
 			
 			
-			
 			if(subuc[jx-1][jy+1]==0){
-				if(subuc[jx-2][jy+1]==MA || subuc[jx-1][jy+2]==MA){
+				if(subuc[jx-2][jy+1]==9 || subuc[jx-1][jy+2]==9){
 					return true;
 				}
 			}
 		
 			if(subuc[jx-1][jy-1]==0){
-				if(subuc[jx-2][jy-1]==MA || subuc[jx-1][jy-2]==MA){
+				if(subuc[jx-2][jy-1]==9 || subuc[jx-1][jy-2]==9){
 					return true;
 				}
 			}
-		
-		
+			
 			if(jx+1<ROWS  && subuc[jx+1][jy+1]==0){
-				if((jx+2<ROWS  && subuc[jx+2][jy+1]==MA) || subuc[jx+1][jy+2]==MA){
+				if((jx+2<ROWS  && subuc[jx+2][jy+1]==9) || subuc[jx+1][jy+2]==9){
 					return true;
 				}
 			}
 			
 			if(jx+1<ROWS  && subuc[jx+1][jy-1]==0){
-				if((jx+2<ROWS  && subuc[jx+2][jy-1]==MA) || subuc[jx+1][jy-2]==MA){
+				if((jx+2<ROWS  && subuc[jx+2][jy-1]==9) || subuc[jx+1][jy-2]==9){
 					return true;
 				}
 			}
@@ -525,10 +524,11 @@ public class ChessAI {
 // check tuong co the an tuong luon 
 		
 			
+			
 			for(int h=jx-1;h>=0;h--){
 				if(subuc[h][jy]==0)
 					continue;
-				else if(subuc[h][jy]==TUONG)
+				else if(subuc[h][jy]==12)
 					return true;
 				else {
 					break;
@@ -538,41 +538,49 @@ public class ChessAI {
 // check tot co the an tuong luon                          
 			
 			
-			if(subuc[jx-1][jy]==TOT || subuc[jx][jy-1]==TOT || subuc[jx][jy+1]==TOT)
+			if(subuc[jx-1][jy]==14 || subuc[jx][jy-1]==14 || subuc[jx][jy+1]==14)
 				return true;
-			
 			return false;
 	}
+	
 	
 	//AlphaBeta
 	public int AlphaBeta(int alpha,int beta,int depth,int[][] data) {
 		if(depth==MAXDEPTH)
 			return ComputeChessScore(data)-scoreBegin;  // tra ve gia tri ban co 
+		
 		List<List<Integer>> tmp=GenerateAllMove(data, depth%2==0?true:false);
 		int best=depth%2==0?-Integer.MIN_VALUE:Integer.MAX_VALUE;
+		
 		for(int i=0;i<tmp.get(0).size();i+=2){
 			int ox=tmp.get(0).get(i);
 			int oy=tmp.get(1).get(i);
 			int nx=tmp.get(0).get(i+1);
 			int ny=tmp.get(1).get(i+1);
-			int[][] sub=CloneData(data);
-			sub[ox][oy]=0;
-			sub[nx][ny]=data[ox][oy];
+			int[][] dataMove=CloneData(data);
+			dataMove[ox][oy]=0;
+			dataMove[nx][ny]=data[ox][oy];
 			if(depth%2==0){
-				if(CanEatAiGerNow(sub))
+				// loai ngay vi neu di nuoc nay se bi an tuong AI ngay 
+				if(canEatAIGerNow(dataMove)) {
 					continue;
+				}
 			}else{
-				if(CanEatUserGer(sub))
+				// vi nguoi se khong di de bi an tuong???
+				if(canEatUserGer(dataMove)) {
 					continue;
+				}
 			}
-			int value=AlphaBeta(alpha, beta, depth+1, sub);
+			int value=AlphaBeta(alpha, beta, depth+1, dataMove);
 			if(depth%2==0){//max
 				if(value>best){
-					best=value; alpha=value;
+					best=value;
+					alpha=value;
 					if(depth==0)
-						Goi=i;
+						bestMove=i;
 				}
-			}else{//min
+			}else{
+				//min
 				if(value<best){
 					best=value;
 					beta=value;
@@ -596,7 +604,6 @@ public class ChessAI {
 
 	//all can move
 	public List<List<Integer>> GenerateAllMove(int[][] data,boolean isAI) {
-		System.out.println("\n ######call GernarateAllMove\n\n");
 		List<List<Integer>> total=new ArrayList<>();
 		total.add(new ArrayList<Integer>());
 		total.add(new ArrayList<Integer>());
@@ -622,10 +629,11 @@ public class ChessAI {
 				}
 			}
 		}
-		System.out.println("total"+total.toString());
+		System.out.println(total.toString());
 		return total;
 	}
 	
+// tra ve mot cap diem : thu nhat la dinh ban dau, thu 2 la nuoc di sinh tu quan do 
 private List<List<Integer>> GenerateMoveByLabel(int[][] data,int i,int j,int label) {
 	
 	java.util.List<Integer> listx=new ArrayList<>();
@@ -1251,10 +1259,10 @@ private List<List<Integer>> GenerateMoveByLabel(int[][] data,int i,int j,int lab
 		break;
 	}
 	List<List<Integer>> res=new ArrayList<>();
-	System.out.println("ger by lable"+i+""+j);
+	//System.out.println("ger by lable");
 	res.add(listx);
 	res.add(listy);
-	System.out.println(res.toString());
+	//System.out.println(res.toString());
 	return res;
   }
 }

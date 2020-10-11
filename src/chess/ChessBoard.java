@@ -684,13 +684,13 @@ public class ChessBoard extends JFrame {
 						JOptionPane.showMessageDialog(null, "congratulate,you win.");
 						return;
 					} else {
-						boolean isShuai = false;
+						boolean userGerExist = false;
 						for (int i = 7; i <= 9; i++)
 							for (int j = 3; j <= 5; j++)
 								if (data[i][j] == 5) {
-									isShuai = true;
+									userGerExist = true;
 								}
-						if (!isShuai) {
+						if (!userGerExist) {
 							JOptionPane.showMessageDialog(null, "sorry,you lose.");
 
 							backUpData.remove(backUpData.size() - 1);
